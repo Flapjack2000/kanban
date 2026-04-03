@@ -2,6 +2,7 @@
 
 import { useRef, useState } from 'react'
 import { createColumn } from './actions'
+import { Plus } from 'lucide-react'
 
 type Props = {
   boardId: string
@@ -31,9 +32,9 @@ export default function AddColumn({ boardId, onColumnAdded }: Props) {
     return (
       <button
         onClick={() => setAdding(true)}
-        className="bg-gray-200 dark:bg-gray-800 bg-opacity-70 hover:bg-opacity-100 rounded-xl w-72 shrink-0 px-4 py-3 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 text-left transition-all"
+        className="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm text-gray-500 dark:text-gray-400 bg-gray-200 dark:bg-gray-800 bg-opacity-70 hover:bg-opacity-100 hover:text-gray-700 dark:hover:text-gray-200 text-left transition-all"
       >
-        + Add column
+        <Plus size={16} /> Add column
       </button>
     )
   }
@@ -55,7 +56,10 @@ export default function AddColumn({ boardId, onColumnAdded }: Props) {
         className="w-full px-3 py-2 text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-white rounded-lg outline-none border border-gray-100 dark:border-gray-700"
       />
       <div className="flex gap-2">
-        <button type="submit" className="text-xs bg-indigo-600 text-white px-3 py-1.5 rounded-md hover:bg-indigo-700">
+        <button
+          type="submit"
+          className="cursor-pointer text-xs px-3 py-1.5 rounded-lg bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-100 hover:bg-gray-300 dark:hover:bg-gray-700 transition-colors font-medium"
+        >
           Add column
         </button>
         <button type="button" onClick={() => setAdding(false)} className="text-xs text-gray-400 hover:text-gray-600">

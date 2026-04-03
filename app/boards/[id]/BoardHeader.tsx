@@ -90,7 +90,7 @@ export default function BoardHeader({ boardId, title, currentUserId, currentRole
         {isOwner && (
           <button
             onClick={handleDelete}
-            className="text-xs text-gray-400 hover:text-red-500 transition-colors"
+            className="text-xs cursor-pointer text-gray-400 hover:text-red-500 transition-colors"
           >
             Delete board
           </button>

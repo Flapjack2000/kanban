@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useTheme } from './ThemeProvider'
+import { Moon, Sun } from 'lucide-react'
 
 export default function ThemeToggle() {
   const { theme, toggle } = useTheme()
@@ -15,7 +16,10 @@ export default function ThemeToggle() {
       className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
       aria-label="Toggle dark mode"
     >
-      {mounted ? (theme === 'dark' ? '☀ Light' : '☾ Dark') : null}
+      {mounted ? (theme === 'dark' ?
+        <Moon className='cursor-pointer' /> : <Sun className='cursor-pointer' />)
+        : null}
+
     </button>
   )
 }

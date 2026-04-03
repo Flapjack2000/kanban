@@ -81,7 +81,7 @@ export default function SharingPanel({ boardId, currentUserId, currentRole, memb
     <>
       <button
         onClick={() => setOpen(true)}
-        className="text-xs px-3 py-1.5 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-colors font-medium"
+        className="cursor-pointer text-xs px-3 py-1.5 rounded-lg bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-100 hover:bg-gray-300 dark:hover:bg-gray-700 transition-colors font-medium"
       >
         Share
       </button>
@@ -161,8 +161,8 @@ export default function SharingPanel({ boardId, currentUserId, currentRole, memb
                           </>
                         ) : (
                           <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${member.role === 'owner' ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300' :
-                              member.role === 'editor' ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300' :
-                                'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
+                            member.role === 'editor' ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300' :
+                              'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
                             }`}>
                             {member.role}
                           </span>

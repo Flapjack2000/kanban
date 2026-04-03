@@ -4,6 +4,7 @@ import { useRef, useState } from 'react'
 import { createCard, deleteCard, deleteColumn, renameColumn, renameCard } from './actions'
 import { useSortable, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
+import { Plus, X } from 'lucide-react'
 
 type Card = {
   id: string
@@ -25,7 +26,8 @@ type Props = {
   onColumnDeleted: (columnId: string) => void
 }
 
-function CardItem({ card, boardId, onCardDeleted }: {
+function CardItem({ currentRole, card, boardId, onCardDeleted }: {
+  currentRole: 'owner' | 'editor' | 'viewer'
   card: Card
   boardId: string
   onCardDeleted: (columnId: string, cardId: string) => void
@@ -34,6 +36,7 @@ function CardItem({ card, boardId, onCardDeleted }: {
   const [title, setTitle] = useState(card.title)
 
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: card.id })
+  const dragProps = currentRole !== 'viewer' ? { ...attributes, ...listeners } : {}
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -72,8 +75,7 @@ function CardItem({ card, boardId, onCardDeleted }: {
           />
         ) : (
           <p
-            {...attributes}
-            {...listeners}
+            {...dragProps}
             onDoubleClick={() => setEditing(true)}
             className="text-sm font-medium text-gray-800 dark:text-gray-100 cursor-grab flex-1"
           >
@@ -82,9 +84,9 @@ function CardItem({ card, boardId, onCardDeleted }: {
         )}
         <button
           onClick={handleDelete}
-          className="opacity-0 group-hover:opacity-100 text-gray-300 hover:text-red-400 transition-all text-xs shrink-0"
+          className="opacity-0 group-hover:opacity-100 text-gray-300 hover:text-red-400 text-xs shrink-0"
         >
-          ✕
+          <X size={16} />
         </button>
       </div>
       {card.priority && (
@@ -191,6 +193,7 @@ export default function Column({ currentRole, id, boardId, title, cards, layout,
         <SortableContext items={cards.map(c => c.id)} strategy={verticalListSortingStrategy}>
           {cards.map(card => (
             <CardItem
+              currentRole={currentRole}
               key={card.id}
               card={card}
               boardId={boardId}
@@ -225,7 +228,7 @@ export default function Column({ currentRole, id, boardId, title, cards, layout,
               onClick={() => setAdding(true)}
               className="text-sm text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 text-left px-1 py-1 transition-colors"
             >
-              + Add card
+              <span className='flex gap-2 items-center'><Plus size={16} /> Add card</span>
             </button>
           )
         )}

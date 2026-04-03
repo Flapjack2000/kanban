@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useState } from 'react'
 import { renameBoard, deleteBoard } from './actions'
+import { Pencil, X } from 'lucide-react'
 
 type Board = {
   id: string
@@ -55,13 +56,13 @@ export default function BoardCard({ board }: { board: Board }) {
           onClick={() => setEditing(true)}
           className="text-xs text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 px-1.5 py-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800"
         >
-          ✎
+          <Pencil size={16} />
         </button>
         <button
           onClick={handleDelete}
           className="text-xs text-gray-400 hover:text-red-500 px-1.5 py-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800"
         >
-          ✕
+          <X size={16} />
         </button>
       </div>
     </div>

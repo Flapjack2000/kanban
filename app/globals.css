@@ -6,3 +6,6 @@
   transition-duration: 150ms;
   transition-timing-function: ease;
 }
+button{
+  cursor:pointer;
+}
