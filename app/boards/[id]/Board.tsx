@@ -39,7 +39,11 @@ type ColumnType = {
 
 type Layout = 'horizontal' | 'grid'
 
-export default function Board({ boardId, initialColumns }: { boardId: string, initialColumns: ColumnType[] }) {
+export default function Board({ boardId, initialColumns, currentRole }: {
+  boardId: string
+  initialColumns: ColumnType[]
+  currentRole: 'owner' | 'editor' | 'viewer'
+}) {
   const [columns, setColumns] = useState(initialColumns)
   const [activeCard, setActiveCard] = useState<Card | null>(null)
   const [activeColumn, setActiveColumn] = useState<ColumnType | null>(null)
@@ -178,6 +182,7 @@ export default function Board({ boardId, initialColumns }: { boardId: string, in
             <div className="flex gap-4 items-start overflow-x-auto pb-4">
               {columns.map(col => (
                 <Column
+                  currentRole={currentRole}
                   key={col.id}
                   id={col.id}
                   boardId={boardId}
@@ -195,6 +200,7 @@ export default function Board({ boardId, initialColumns }: { boardId: string, in
             <div className="grid grid-cols-2 xl:grid-cols-3 gap-4 overflow-y-auto pb-4">
               {columns.map(col => (
                 <Column
+                  currentRole={currentRole}
                   key={col.id}
                   id={col.id}
                   boardId={boardId}

@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { signOut } from '@/app/login/actions'
 import ThemeToggle from '../components/ThemeToggle'
+import Link from 'next/link'
 
 export default async function BoardsLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()
@@ -18,7 +19,11 @@ export default async function BoardsLayout({ children }: { children: React.React
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <nav className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 px-6 py-3 flex items-center justify-between">
-        <span className="font-semibold text-gray-900 dark:text-white">Kanban</span>
+        <Link href={"/boards"}>
+          <span className="font-semibold text-gray-900 dark:text-white">
+            Kanban
+          </span>
+        </Link>
         <div className="flex items-center gap-4">
           <ThemeToggle />
           <span className="text-sm text-gray-500 dark:text-gray-400">{profile?.username}</span>

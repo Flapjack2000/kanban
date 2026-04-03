@@ -68,12 +68,27 @@ export async function deleteCard(cardId: string, boardId: string) {
   revalidatePath(`/boards/${boardId}`)
 }
 
-export async function moveCard(
-  cardId: string,
-  newColumnId: string,
-  newPosition: number,
-  boardId: string
-) {
+export async function renameColumn(columnId: string, title: string, boardId: string) {
+  const supabase = await createClient()
+  const { error } = await supabase
+    .from('columns')
+    .update({ title })
+    .eq('id', columnId)
+  if (error) throw new Error(error.message)
+  revalidatePath(`/boards/${boardId}`)
+}
+
+export async function renameCard(cardId: string, title: string, boardId: string) {
+  const supabase = await createClient()
+  const { error } = await supabase
+    .from('cards')
+    .update({ title })
+    .eq('id', cardId)
+  if (error) throw new Error(error.message)
+  revalidatePath(`/boards/${boardId}`)
+}
+
+export async function moveCard(cardId: string, newColumnId: string, newPosition: number, boardId: string) {
   const supabase = await createClient()
   const { error } = await supabase
     .from('cards')
