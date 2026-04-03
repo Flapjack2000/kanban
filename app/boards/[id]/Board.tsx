@@ -213,13 +213,13 @@ export default function Board({ boardId, initialColumns }: { boardId: string, in
 
         <DragOverlay>
           {activeCard && (
-            <div className="bg-white rounded-lg p-3 shadow-lg border border-gray-100 w-72 rotate-2">
-              <p className="text-sm font-medium text-gray-800">{activeCard.title}</p>
+            <div className="bg-white dark:bg-gray-900 rounded-lg p-3 shadow-lg border border-gray-100 dark:border-gray-700 w-72 rotate-2">
+              <p className="text-sm font-medium text-gray-800 dark:text-gray-100">{activeCard.title}</p>
             </div>
           )}
           {activeColumn && (
-            <div className="bg-gray-200 rounded-xl w-72 px-4 py-3 opacity-80 shadow-lg">
-              <span className="font-medium text-sm text-gray-700">{activeColumn.title}</span>
+            <div className="bg-gray-200 dark:bg-gray-800 rounded-xl w-72 px-4 py-3 opacity-80 shadow-lg">
+              <span className="font-medium text-sm text-gray-700 dark:text-gray-200">{activeColumn.title}</span>
             </div>
           )}
         </DragOverlay>
