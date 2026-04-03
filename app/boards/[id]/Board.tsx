@@ -147,7 +147,7 @@ export default function Board({ boardId, initialColumns }: { boardId: string, in
         <div className="bg-gray-200 dark:bg-gray-800 rounded-lg p-1 flex gap-1">
           <button
             onClick={() => setLayout('horizontal')}
-            className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${layout === 'horizontal'
+            className={`px-3 py-1.5 rounded-md text-xs font-medium ${layout === 'horizontal'
               ? 'bg-white dark:bg-gray-700 text-gray-800 dark:text-white shadow-sm'
               : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
               }`}
@@ -156,9 +156,9 @@ export default function Board({ boardId, initialColumns }: { boardId: string, in
           </button>
           <button
             onClick={() => setLayout('grid')}
-            className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${layout === 'horizontal'
-                ? 'bg-white dark:bg-gray-700 text-gray-800 dark:text-white shadow-sm'
-                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+            className={`px-3 py-1.5 rounded-md text-xs font-medium ${layout === 'horizontal'
+              ? 'bg-white dark:bg-gray-700 text-gray-800 dark:text-white shadow-sm'
+              : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
               }`}
           >
             ⊞ Grid

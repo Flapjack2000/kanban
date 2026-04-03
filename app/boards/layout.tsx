@@ -23,7 +23,7 @@ export default async function BoardsLayout({ children }: { children: React.React
           <ThemeToggle />
           <span className="text-sm text-gray-500 dark:text-gray-400">{profile?.username}</span>
           <form action={signOut}>
-            <button type="submit" className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
+            <button type="submit" className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">
               Sign out
             </button>
           </form>

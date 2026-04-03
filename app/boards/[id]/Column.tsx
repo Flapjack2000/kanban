@@ -59,9 +59,9 @@ function CardItem({ card, boardId, onCardDeleted }: {
       </div>
       {card.priority && (
         <span className={`inline-block mt-2 text-xs px-2 py-0.5 rounded-full font-medium ${card.priority === 'urgent' ? 'bg-red-100 text-red-700' :
-            card.priority === 'high' ? 'bg-orange-100 text-orange-700' :
-              card.priority === 'medium' ? 'bg-yellow-100 text-yellow-700' :
-                'bg-gray-100 text-gray-500'
+          card.priority === 'high' ? 'bg-orange-100 text-orange-700' :
+            card.priority === 'medium' ? 'bg-yellow-100 text-yellow-700' :
+              'bg-gray-100 text-gray-500'
           }`}>
           {card.priority}
         </span>
@@ -153,7 +153,7 @@ export default function Column({ id, boardId, title, cards, layout, onCardAdded,
               className="w-full text-sm text-gray-700 dark:text-gray-200 placeholder-gray-400 outline-none bg-white dark:bg-gray-900"
             />
             <div className="flex gap-2 mt-2">
-              <button type="submit" className="text-xs bg-indigo-600 text-white px-2 py-1 rounded-md hover:bg-indigo-700 transition-colors">
+              <button type="submit" className="text-xs bg-indigo-600 text-white px-2 py-1 rounded-md hover:bg-indigo-700">
                 Add
               </button>
               <button type="button" onClick={() => setAdding(false)} className="text-xs text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300">
@@ -164,7 +164,7 @@ export default function Column({ id, boardId, title, cards, layout, onCardAdded,
         ) : (
           <button
             onClick={() => setAdding(true)}
-            className="text-sm text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 text-left px-1 py-1 transition-colors"
+            className="text-sm text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 text-left px-1 py-1"
           >
             + Add card
           </button>

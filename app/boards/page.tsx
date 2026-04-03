@@ -30,7 +30,7 @@ export default async function BoardsPage() {
         ))}
 
         <form action={createBoard}>
-          <div className="bg-white dark:bg-gray-900 border border-dashed border-gray-300 dark:border-gray-700 rounded-xl p-5 hover:border-indigo-400 transition-colors">
+          <div className="bg-white dark:bg-gray-900 border border-dashed border-gray-300 dark:border-gray-700 rounded-xl p-5 hover:border-indigo-400">
             <input
               name="title"
               type="text"
@@ -39,7 +39,7 @@ export default async function BoardsPage() {
               className="w-full text-sm text-gray-700 dark:text-gray-300 placeholder-gray-400 outline-none bg-transparent" />
             <button
               type="submit"
-              className="mt-3 text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 transition-colors"
+              className="mt-3 text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-800"
             >
               + Create board
             </button>

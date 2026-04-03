@@ -55,7 +55,7 @@ export default function AddColumn({ boardId, onColumnAdded }: Props) {
         className="w-full px-3 py-2 text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-white rounded-lg outline-none border border-gray-100 dark:border-gray-700"
       />
       <div className="flex gap-2">
-        <button type="submit" className="text-xs bg-indigo-600 text-white px-3 py-1.5 rounded-md hover:bg-indigo-700 transition-colors">
+        <button type="submit" className="text-xs bg-indigo-600 text-white px-3 py-1.5 rounded-md hover:bg-indigo-700">
           Add column
         </button>
         <button type="button" onClick={() => setAdding(false)} className="text-xs text-gray-400 hover:text-gray-600">
