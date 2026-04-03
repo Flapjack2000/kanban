@@ -17,7 +17,7 @@ export default function ThemeToggle() {
       aria-label="Toggle dark mode"
     >
       {mounted ? (theme === 'dark' ?
-        <Moon className='cursor-pointer' /> : <Sun className='cursor-pointer' />)
+        <Sun className='text-yellow-200 cursor-pointer' /> : <Moon className='text-indigo-600 cursor-pointer' />)
         : null}
 
     </button>

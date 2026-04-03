@@ -8,7 +8,7 @@ import SharingPanel from './SharingPanel'
 type Member = {
   user_id: string
   role: string
-  profiles: { username: string; avatar_url: string | null } | null
+  profiles: { username: string } | null
 }
 
 type Invite = {

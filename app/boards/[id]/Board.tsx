@@ -21,6 +21,7 @@ import Column from './Column'
 import AddColumn from './AddColumn'
 import { moveCard, moveColumn } from './actions'
 import { LayoutGrid, Kanban } from 'lucide-react'
+import { BoardRole } from '@/lib/boardRole'
 
 type Card = {
   id: string
@@ -152,9 +153,10 @@ export default function Board({ boardId, initialColumns, currentRole }: {
         <div className="bg-gray-200 dark:bg-gray-800 rounded-lg p-1 flex gap-1">
           <button
             onClick={() => setLayout('horizontal')}
-            className={`flex flex-col cursor-pointer items-center gap-1 px-3 py-1.5 min-w-20 rounded-md text-xs font-medium ${layout === 'horizontal'
-              ? 'bg-white dark:bg-gray-700 text-gray-800 dark:text-white shadow-sm'
-              : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+            className={`flex flex-col cursor-pointer items-center gap-1 px-3 py-1.5 min-w-20 rounded-md text-xs font-medium 
+              ${layout === 'horizontal'
+                ? 'bg-white dark:bg-gray-700 text-indigo-800 dark:text-yellow-200 shadow-sm'
+                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
               }`}
           >
             <Kanban />
@@ -162,9 +164,10 @@ export default function Board({ boardId, initialColumns, currentRole }: {
           </button>
           <button
             onClick={() => setLayout('grid')}
-            className={`flex flex-col cursor-pointer items-center gap-1 px-3 py-1.5 min-w-20 rounded-md text-xs font-medium ${layout === 'grid'
-              ? 'bg-white dark:bg-gray-700 text-gray-800 dark:text-white shadow-sm'
-              : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+            className={`flex flex-col cursor-pointer items-center gap-1 px-3 py-1.5 min-w-20 rounded-md text-xs font-medium 
+              ${layout === 'grid'
+                ? 'bg-white dark:bg-gray-700 text-indigo-800 dark:text-yellow-200 shadow-sm'
+                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
               }`}
           >
             <LayoutGrid />

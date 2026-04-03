@@ -27,7 +27,7 @@ export default async function BoardPage({ params }: { params: Promise<{ id: stri
       ),
       board_members (
         user_id, role,
-        profiles ( username, avatar_url )
+        profiles ( username )
       ),
       board_invites (
         id, token, role, expires_at
@@ -41,7 +41,7 @@ export default async function BoardPage({ params }: { params: Promise<{ id: stri
   // Build full members list including owner
   const { data: ownerProfile } = await supabase
     .from('profiles')
-    .select('username, avatar_url')
+    .select('username')
     .eq('id', board.owner_id)
     .single()
 

@@ -43,7 +43,7 @@ export default async function BoardsPage() {
       </div>
 
       {boards?.length === 0 && (
-        <p className="text-sm text-gray-400 mt-4">No boards yet — create one above.</p>
+        <p className="text-sm text-gray-400 mt-4">No boards yet, create one above.</p>
       )}
     </div>
   )
