@@ -32,6 +32,8 @@ export default function BoardHeader({ boardId, title, currentUserId, currentRole
   const [value, setValue] = useState(title)
 
   const isOwner = currentRole === 'owner'
+  const otherMembers = members.filter(m => m.user_id !== currentUserId)
+
 
   async function handleRename() {
     if (value.trim() && value !== title) {
@@ -78,6 +80,19 @@ export default function BoardHeader({ boardId, title, currentUserId, currentRole
           </span>
         )}
       </nav>
+
+      {/* Members */}
+      <div className="flex items-center gap-2">
+        {members.map(m => (
+          <span
+            key={m.user_id}
+            title={`${m.profiles?.username} (${m.role})`}
+            className="text-xs px-2 py-1 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 font-medium"
+          >
+            {m.profiles?.username}
+          </span>
+        ))}
+      </div>
 
       <div className="flex items-center gap-3">
         <SharingPanel

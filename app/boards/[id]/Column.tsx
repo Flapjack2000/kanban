@@ -1,42 +1,41 @@
 'use client'
 
 import { useRef, useState } from 'react'
-import { createCard, deleteCard, deleteColumn, renameColumn, renameCard } from './actions'
+import { createCard, deleteCard, deleteColumn, renameColumn } from './actions'
 import { useSortable, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { Plus, X } from 'lucide-react'
+import { Plus, X, Logs } from 'lucide-react'
+import CardModal from './CardModal'
+import { CardType } from './types'
 
-type Card = {
-  id: string
-  title: string
-  priority: string | null
-  due_date: string | null
-  position: number
+type CardItemProps = {
+  card: CardType
+  boardId: string
+  columnTitle: string
+  onCardDeleted: (cardId: string) => void
+  onCardUpdated: (cardId: string, fields: Partial<CardType>) => void
+  currentRole: 'owner' | 'editor' | 'viewer'
 }
 
-type Props = {
-  currentRole: 'owner' | 'editor' | 'viewer'
+type ColumnProps = {
   id: string
   boardId: string
   title: string
-  cards: Card[]
+  cards: CardType[]
   layout: 'horizontal' | 'grid'
-  onCardAdded: (columnId: string, card: Card) => void
-  onCardDeleted: (columnId: string, cardId: string) => void
+  currentRole: 'owner' | 'editor' | 'viewer'
+  onCardAdded: (columnId: string, card: CardType) => void
+  onCardDeleted: (cardId: string) => void
   onColumnDeleted: (columnId: string) => void
+  onCardUpdated: (cardId: string, fields: Partial<CardType>) => void
 }
 
-function CardItem({ currentRole, card, boardId, onCardDeleted }: {
-  currentRole: 'owner' | 'editor' | 'viewer'
-  card: Card
-  boardId: string
-  onCardDeleted: (columnId: string, cardId: string) => void
-}) {
-  const [editing, setEditing] = useState(false)
-  const [title, setTitle] = useState(card.title)
+function CardItem({ card, boardId, columnTitle, onCardDeleted, onCardUpdated, currentRole }: CardItemProps) {
+  const [modalOpen, setModalOpen] = useState(false)
+  const [localCard, setLocalCard] = useState(card)
+  const [dragging, setDragging] = useState(false)
 
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: card.id })
-  const dragProps = currentRole !== 'viewer' ? { ...attributes, ...listeners } : {}
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -44,65 +43,95 @@ function CardItem({ currentRole, card, boardId, onCardDeleted }: {
     opacity: isDragging ? 0.4 : 1,
   }
 
-  async function handleRename() {
-    if (title.trim() && title !== card.title) {
-      await renameCard(card.id, title.trim(), boardId)
-    }
-    setEditing(false)
-  }
+  const dragListeners = currentRole !== 'viewer' ? {
+    ...listeners,
+    onPointerDown: (e: React.PointerEvent) => {
+      setDragging(true)
+      listeners?.onPointerDown?.(e)
+    },
+    onPointerUp: () => setDragging(false),
+  } : {}
 
   async function handleDelete() {
-    if (confirm('Delete this card?')) {
-      onCardDeleted('', card.id)
-      await deleteCard(card.id, boardId)
-    }
+    if (!confirm('Delete this card?')) return
+    onCardDeleted(card.id)
+    await deleteCard(card.id, boardId)
+  }
+
+  function handleUpdate(cardId: string, fields: Partial<CardType>) {
+    setLocalCard(prev => ({ ...prev, ...fields }))
+    onCardUpdated(cardId, fields)
   }
 
   return (
-    <div ref={setNodeRef} style={style} className="group bg-white dark:bg-gray-900 rounded-lg p-3 shadow-sm border border-gray-100 dark:border-gray-700">
-      <div className="flex items-start justify-between gap-2">
-        {editing ? (
-          <input
-            autoFocus
-            value={title}
-            onChange={e => setTitle(e.target.value)}
-            onBlur={handleRename}
-            onKeyDown={e => {
-              if (e.key === 'Enter') handleRename()
-              if (e.key === 'Escape') { setTitle(card.title); setEditing(false) }
-            }}
-            className="flex-1 text-sm font-medium text-gray-800 dark:text-gray-100 bg-transparent outline-none border-b border-indigo-400"
-          />
-        ) : (
-          <p
-            {...dragProps}
-            onDoubleClick={() => setEditing(true)}
-            className="text-sm font-medium text-gray-800 dark:text-gray-100 cursor-grab flex-1"
+    <>
+      <div
+        ref={setNodeRef}
+        style={style}
+        onClick={() => { if (!dragging) setModalOpen(true) }}
+        className={`group bg-white dark:bg-gray-900 rounded-lg p-3 shadow-sm border border-gray-100 dark:border-gray-700 ${dragging ? 'cursor-grabbing' : 'cursor-pointer'}`}
+      >
+        <div className="flex items-start justify-between gap-2">
+          <div
+            {...attributes}
+            {...dragListeners}
+            className="flex-1"
           >
-            {title}
-          </p>
-        )}
-        <button
-          onClick={handleDelete}
-          className="opacity-0 group-hover:opacity-100 text-gray-300 hover:text-red-400 text-xs shrink-0"
-        >
-          <X size={16} />
-        </button>
+            <p className="text-sm font-medium text-gray-800 dark:text-gray-100">
+              {localCard.title}
+            </p>
+          </div>
+          {currentRole !== 'viewer' && (
+            <button
+              onClick={e => { e.stopPropagation(); handleDelete() }}
+              className="opacity-0 group-hover:opacity-100 text-gray-300 hover:text-red-400 transition-all text-xs shrink-0"
+            >
+              <X size={16} />
+            </button>
+          )}
+        </div>
+        <div className="flex items-center gap-2 mt-2 flex-wrap">
+          {localCard.priority && (
+            <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${localCard.priority === 'urgent' ? 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300' :
+              localCard.priority === 'high' ? 'bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300' :
+                localCard.priority === 'medium' ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300' :
+                  'bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400'
+              }`}>
+              {localCard.priority}
+            </span>
+          )}
+          {localCard.due_date && (
+            <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${new Date(localCard.due_date) < new Date()
+              ? 'bg-red-50 text-red-500 dark:bg-red-900 dark:text-red-300'
+              : 'bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400'
+              }`}>
+              {new Date(localCard.due_date).toLocaleDateString()}
+            </span>
+          )}
+          {localCard.description && (
+            <span className="text-xs hyphens-auto text-gray-400 dark:text-gray-500">
+              {localCard.description.length > 250
+                ? `${localCard.description.slice(0, 250).trim()}...`
+                : localCard.description}
+            </span>
+          )}
+        </div>
       </div>
-      {card.priority && (
-        <span className={`inline-block mt-2 text-xs px-2 py-0.5 rounded-full font-medium ${card.priority === 'urgent' ? 'bg-red-100 text-red-700' :
-          card.priority === 'high' ? 'bg-orange-100 text-orange-700' :
-            card.priority === 'medium' ? 'bg-yellow-100 text-yellow-700' :
-              'bg-gray-100 text-gray-500'
-          }`}>
-          {card.priority}
-        </span>
+
+      {modalOpen && (
+        <CardModal
+          card={localCard}
+          boardId={boardId}
+          columnTitle={columnTitle}
+          onClose={() => setModalOpen(false)}
+          onUpdate={handleUpdate}
+        />
       )}
-    </div>
+    </>
   )
 }
 
-export default function Column({ currentRole, id, boardId, title, cards, layout, onCardAdded, onCardDeleted, onColumnDeleted }: Props) {
+export default function Column({ currentRole, id, boardId, title, cards, layout, onCardAdded, onCardDeleted, onColumnDeleted, onCardUpdated }: ColumnProps) {
   const [adding, setAdding] = useState(false)
   const [editingTitle, setEditingTitle] = useState(false)
   const [columnTitle, setColumnTitle] = useState(title)
@@ -119,9 +148,10 @@ export default function Column({ currentRole, id, boardId, title, cards, layout,
 
   async function handleAddCard(formData: FormData) {
     const title = formData.get('title') as string
-    const tempCard: Card = {
+    const tempCard: CardType = {
       id: crypto.randomUUID(),
       title,
+      description: null,
       priority: null,
       due_date: null,
       position: cards.length,
@@ -133,10 +163,9 @@ export default function Column({ currentRole, id, boardId, title, cards, layout,
   }
 
   async function handleDeleteColumn() {
-    if (confirm(`Delete "${columnTitle}" and all its cards?`)) {
-      onColumnDeleted(id)
-      await deleteColumn(id, boardId)
-    }
+    if (!confirm(`Delete "${columnTitle}" and all its cards?`)) return
+    onColumnDeleted(id)
+    await deleteColumn(id, boardId)
   }
 
   async function handleRenameColumn() {
@@ -169,14 +198,13 @@ export default function Column({ currentRole, id, boardId, title, cards, layout,
           <span
             {...dragProps}
             onDoubleClick={() => setEditingTitle(true)}
-            className="font-medium text-sm text-gray-700 dark:text-gray-200 cursor-grab flex-1"
+            className={`font-medium text-sm text-gray-700 dark:text-gray-200 flex-1 ${currentRole !== 'viewer' ? 'cursor-grab' : 'cursor-default'}`}
           >
             {columnTitle}
           </span>
         )}
         <div className="flex items-center gap-2">
           <span className="text-xs text-gray-400 dark:text-gray-500">{cards.length}</span>
-
           {currentRole !== 'viewer' && (
             <button
               onClick={handleDeleteColumn}
@@ -193,11 +221,13 @@ export default function Column({ currentRole, id, boardId, title, cards, layout,
         <SortableContext items={cards.map(c => c.id)} strategy={verticalListSortingStrategy}>
           {cards.map(card => (
             <CardItem
-              currentRole={currentRole}
               key={card.id}
               card={card}
               boardId={boardId}
+              columnTitle={title}
               onCardDeleted={onCardDeleted}
+              onCardUpdated={onCardUpdated}
+              currentRole={currentRole}
             />
           ))}
         </SortableContext>
@@ -228,7 +258,7 @@ export default function Column({ currentRole, id, boardId, title, cards, layout,
               onClick={() => setAdding(true)}
               className="text-sm text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 text-left px-1 py-1 transition-colors"
             >
-              <span className='flex gap-2 items-center'><Plus size={16} /> Add card</span>
+              <span className="flex gap-2 items-center"><Plus size={16} /> Add card</span>
             </button>
           )
         )}

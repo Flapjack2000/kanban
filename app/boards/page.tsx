@@ -1,7 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
-import Link from 'next/link'
-import { createBoard, deleteBoard, renameBoard } from './actions'
+import { createBoard } from './actions'
 import BoardCard from './BoardCard'
+import { Plus } from 'lucide-react'
+import Link from 'next/link'
 
 export default async function BoardsPage() {
   const supabase = await createClient()
@@ -36,7 +37,7 @@ export default async function BoardsPage() {
               type="submit"
               className="mt-3 text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 transition-colors"
             >
-              + Create board
+              <span className='flex gap-2 items-center'><Plus size={16} /> Create board</span>
             </button>
           </div>
         </form>
@@ -45,6 +46,13 @@ export default async function BoardsPage() {
       {boards?.length === 0 && (
         <p className="text-sm text-gray-400 mt-4">No boards yet, create one above.</p>
       )}
+
+      <hr className='mt-10 mb-4 dark:text-indigo-400 text-indigo-700' />
+
+      <Link className='dark:text-indigo-400 text-indigo-700 hover:underline' href="https://buymeacoffee.com/zachwilliams">
+        {"☕ Buy me a coffee :)"}
+      </Link>
+
     </div>
   )
 }

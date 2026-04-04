@@ -22,7 +22,7 @@ export default async function BoardPage({ params }: { params: Promise<{ id: stri
       columns (
         id, title, position, wip_limit,
         cards (
-          id, title, position, priority, due_date
+          id, title, description, position, priority, due_date
         )
       ),
       board_members (

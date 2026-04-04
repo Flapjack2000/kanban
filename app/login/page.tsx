@@ -44,6 +44,10 @@ export default function LoginPage() {
                 name="username"
                 type="text"
                 required
+                minLength={3}
+                maxLength={20}
+                autoComplete="off"
+                placeholder="3-20 chars, letters, numbers, _"
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
             </div>
           )}

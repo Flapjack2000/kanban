@@ -22,22 +22,7 @@ import AddColumn from './AddColumn'
 import { moveCard, moveColumn } from './actions'
 import { LayoutGrid, Kanban } from 'lucide-react'
 import { BoardRole } from '@/lib/boardRole'
-
-type Card = {
-  id: string
-  title: string
-  priority: string | null
-  due_date: string | null
-  position: number
-}
-
-type ColumnType = {
-  id: string
-  title: string
-  position: number
-  wip_limit: number | null
-  cards: Card[]
-}
+import { CardType, ColumnType } from './types'
 
 type Layout = 'horizontal' | 'grid'
 
@@ -47,7 +32,7 @@ export default function Board({ boardId, initialColumns, currentRole }: {
   currentRole: 'owner' | 'editor' | 'viewer'
 }) {
   const [columns, setColumns] = useState(initialColumns)
-  const [activeCard, setActiveCard] = useState<Card | null>(null)
+  const [activeCard, setActiveCard] = useState<CardType | null>(null)
   const [activeColumn, setActiveColumn] = useState<ColumnType | null>(null)
   const [layout, setLayout] = useState<Layout>('horizontal')
 
@@ -59,7 +44,7 @@ export default function Board({ boardId, initialColumns, currentRole }: {
     return columns.find(col => col.cards.some(c => c.id === cardId))
   }
 
-  function onCardAdded(columnId: string, card: Card) {
+  function onCardAdded(columnId: string, card: CardType) {
     setColumns(prev => prev.map(col =>
       col.id === columnId ? { ...col, cards: [...col.cards, card] } : col
     ))
@@ -78,6 +63,13 @@ export default function Board({ boardId, initialColumns, currentRole }: {
 
   function onColumnDeleted(columnId: string) {
     setColumns(prev => prev.filter(col => col.id !== columnId))
+  }
+
+  function onCardUpdated(cardId: string, fields: Partial<CardType>) {
+    setColumns(prev => prev.map(col => ({
+      ...col,
+      cards: col.cards.map(c => c.id === cardId ? { ...c, ...fields } : c)
+    })))
   }
 
   function onDragStart(event: DragStartEvent) {
@@ -197,6 +189,7 @@ export default function Board({ boardId, initialColumns, currentRole }: {
                   layout={layout}
                   onCardAdded={onCardAdded}
                   onCardDeleted={onCardDeleted}
+                  onCardUpdated={onCardUpdated}
                   onColumnDeleted={onColumnDeleted}
                 />
               ))}
@@ -215,6 +208,7 @@ export default function Board({ boardId, initialColumns, currentRole }: {
                   layout={layout}
                   onCardAdded={onCardAdded}
                   onCardDeleted={onCardDeleted}
+                  onCardUpdated={onCardUpdated}
                   onColumnDeleted={onColumnDeleted}
                 />
               ))}

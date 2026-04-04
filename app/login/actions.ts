@@ -42,16 +42,38 @@ export async function signIn(formData: FormData) {
 export async function signUp(formData: FormData) {
   const supabase = await createClient()
 
+  const username = formData.get('username') as string
+  const email = formData.get('email') as string
+  const password = formData.get('password') as string
+
+  if (username.length < 3) return { error: 'Username must be at least 3 characters.' }
+  if (username.length > 20) return { error: 'Username must be 20 characters or less.' }
+  if (!/^[a-zA-Z0-9_]+$/.test(username)) return { error: 'Username can only contain letters, numbers, and underscores.' }
+
+  // Check username taken
+  const { data: existing } = await supabaseAdmin
+    .from('profiles')
+    .select('id')
+    .eq('username', username)
+    .single()
+
+  if (existing) return { error: 'That username is already taken.' }
+
   const { error } = await supabase.auth.signUp({
-    email: formData.get('email') as string,
-    password: formData.get('password') as string,
+    email,
+    password,
     options: {
-      data: { username: formData.get('username') as string },
+      data: { username },
       emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`,
     },
   })
 
-  if (error) return { error: error.message }
+  if (error) {
+    if (error.message.toLowerCase().includes('already registered')) {
+      return { error: 'An account with that email already exists.' }
+    }
+    return { error: error.message }
+  }
 
   return { message: 'Check your email to confirm your account.' }
 }

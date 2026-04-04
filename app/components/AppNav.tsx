@@ -4,6 +4,7 @@ import { signOut } from '@/app/login/actions'
 import ThemeToggle from './ThemeToggle'
 import Link from 'next/link'
 
+
 export default async function AppNav() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()

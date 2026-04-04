@@ -58,14 +58,12 @@ export async function deleteColumn(columnId: string, boardId: string) {
   const supabase = await createClient()
   const { error } = await supabase.from('columns').delete().eq('id', columnId)
   if (error) throw new Error(error.message)
-  revalidatePath(`/boards/${boardId}`)
 }
 
 export async function deleteCard(cardId: string, boardId: string) {
   const supabase = await createClient()
   const { error } = await supabase.from('cards').delete().eq('id', cardId)
   if (error) throw new Error(error.message)
-  revalidatePath(`/boards/${boardId}`)
 }
 
 export async function renameColumn(columnId: string, title: string, boardId: string) {
