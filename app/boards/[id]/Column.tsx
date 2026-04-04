@@ -164,8 +164,8 @@ export default function Column({ currentRole, id, boardId, title, cards, layout,
 
   async function handleDeleteColumn() {
     if (!confirm(`Delete "${columnTitle}" and all its cards?`)) return
-    onColumnDeleted(id)
     await deleteColumn(id, boardId)
+    onColumnDeleted(id)
   }
 
   async function handleRenameColumn() {

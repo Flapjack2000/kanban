@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { supabaseAdmin } from '@/lib/supabase/admin'
 import { revalidatePath } from 'next/cache'
 import { getBoardRole } from '@/lib/boardRole'
+import { redirect } from 'next/navigation'
 
 export async function addMemberByUsername(boardId: string, username: string, role: 'editor' | 'viewer') {
   const callerRole = await getBoardRole(boardId)
@@ -75,7 +76,7 @@ export async function leaveBoard(boardId: string) {
     .eq('user_id', user.id)
 
   if (error) throw new Error(error.message)
-  revalidatePath('/boards')
+  redirect('/boards')
 }
 
 export async function createInviteLink(boardId: string, role: 'editor' | 'viewer') {

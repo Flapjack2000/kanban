@@ -5,13 +5,15 @@ import { useState } from 'react'
 import { renameBoard, deleteBoard } from './actions'
 import { Pencil, X } from 'lucide-react'
 
-type Board = {
+export type BoardType = {
   id: string
   title: string
   created_at: string | null
 }
 
-export default function BoardCard({ board }: { board: Board }) {
+export default function BoardCard(
+  { board, isOwner }: { board: BoardType, isOwner: boolean }
+) {
   const [editing, setEditing] = useState(false)
   const [title, setTitle] = useState(board.title)
 
@@ -51,20 +53,22 @@ export default function BoardCard({ board }: { board: Board }) {
         </Link>
       )}
 
-      <div className="absolute top-3 right-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-        <button
-          onClick={() => setEditing(true)}
-          className="text-xs text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 px-1.5 py-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800"
-        >
-          <Pencil size={16} />
-        </button>
-        <button
-          onClick={handleDelete}
-          className="text-xs text-gray-400 hover:text-red-500 px-1.5 py-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800"
-        >
-          <X size={16} />
-        </button>
-      </div>
+      {isOwner && (
+        <div className="absolute top-3 right-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          <button
+            onClick={() => setEditing(true)}
+            className="text-xs text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 px-1.5 py-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800"
+          >
+            <Pencil size={16} />
+          </button>
+          <button
+            onClick={handleDelete}
+            className="text-xs text-gray-400 hover:text-red-500 px-1.5 py-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800"
+          >
+            <X size={16} />
+          </button>
+        </div>
+      )}
     </div>
   )
 }

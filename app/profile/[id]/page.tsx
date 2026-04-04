@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import DeleteAccountButton from '../DeleteAccountButton'
 
 type Board = {
   id: string
@@ -86,6 +87,10 @@ export default async function ProfilePage() {
       <Section title="Viewer boards">
         <BoardGrid boards={viewers} fallback="You haven't been added as a viewer on any boards." />
       </Section>
+
+      <div className="pt-6 border-t border-gray-200 dark:border-gray-800">
+        <DeleteAccountButton />
+      </div>
     </div>
   )
 }

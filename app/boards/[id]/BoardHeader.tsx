@@ -32,8 +32,6 @@ export default function BoardHeader({ boardId, title, currentUserId, currentRole
   const [value, setValue] = useState(title)
 
   const isOwner = currentRole === 'owner'
-  const otherMembers = members.filter(m => m.user_id !== currentUserId)
-
 
   async function handleRename() {
     if (value.trim() && value !== title) {
