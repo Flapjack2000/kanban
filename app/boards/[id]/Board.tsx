@@ -16,13 +16,11 @@ import {
   horizontalListSortingStrategy,
   arrayMove,
 } from '@dnd-kit/sortable'
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import Column from './Column'
 import AddColumn from './AddColumn'
 import { LayoutGrid, Kanban } from 'lucide-react'
 import { CardType, ColumnType } from './types'
-import { needsRebalance } from '@/lib/ordering'
-import { generateKeyBetween } from 'fractional-indexing'
 import { moveCard, moveColumn, rebalanceCards, rebalanceColumns } from './actions'
 
 type Layout = 'horizontal' | 'grid'
@@ -36,6 +34,10 @@ export default function Board({ boardId, initialColumns, currentRole }: {
   const [activeCard, setActiveCard] = useState<CardType | null>(null)
   const [activeColumn, setActiveColumn] = useState<ColumnType | null>(null)
   const [layout, setLayout] = useState<Layout>('horizontal')
+
+  const dragSourceColId = useRef<string | null>(null)
+  const dragDestColId = useRef<string | null>(null)
+  const pendingRebalance = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const sensors = useSensors(useSensor(PointerSensor, {
     activationConstraint: { distance: 5 }
@@ -73,12 +75,21 @@ export default function Board({ boardId, initialColumns, currentRole }: {
     })))
   }
 
+  function schedulRebalance(fn: () => void) {
+    if (pendingRebalance.current) clearTimeout(pendingRebalance.current)
+    pendingRebalance.current = setTimeout(fn, 500)
+  }
+
   function onDragStart(event: DragStartEvent) {
     const { active } = event
     const col = columns.find(c => c.id === active.id)
     if (col) { setActiveColumn(col); return }
     const card = columns.flatMap(c => c.cards).find(c => c.id === active.id)
-    if (card) setActiveCard(card)
+    if (card) {
+      setActiveCard(card)
+      dragSourceColId.current = findColumn(active.id as string)?.id ?? null
+      dragDestColId.current = dragSourceColId.current
+    }
   }
 
   function onDragOver(event: DragOverEvent) {
@@ -94,16 +105,28 @@ export default function Board({ boardId, initialColumns, currentRole }: {
 
     if (!activeCol || !overCol || activeCol.id === overCol.id) return
 
+    dragDestColId.current = overCol.id
+
     setColumns(prev => {
       const activeCard = activeCol.cards.find(c => c.id === active.id)!
+
+      // Find where to insert in the destination column
+      const overCardIndex = overCol.cards.findIndex(c => c.id === over.id)
+      const insertIndex = overCardIndex >= 0 ? overCardIndex : overCol.cards.length
+
       return prev.map(col => {
-        if (col.id === activeCol.id) return { ...col, cards: col.cards.filter(c => c.id !== active.id) }
-        if (col.id === overCol.id) return { ...col, cards: [...col.cards, activeCard] }
+        if (col.id === activeCol.id) {
+          return { ...col, cards: col.cards.filter(c => c.id !== active.id) }
+        }
+        if (col.id === overCol.id) {
+          const newCards = col.cards.filter(c => c.id !== active.id)
+          newCards.splice(insertIndex, 0, activeCard)
+          return { ...col, cards: newCards }
+        }
         return col
       })
     })
   }
-
   function onDragEnd(event: DragEndEvent) {
     const { active, over } = event
     setActiveCard(null)
@@ -116,69 +139,47 @@ export default function Board({ boardId, initialColumns, currentRole }: {
       const oldIndex = columns.findIndex(c => c.id === active.id)
       const newIndex = columns.findIndex(c => c.id === over.id)
       if (oldIndex === newIndex) return
-
       const newColumns = arrayMove(columns, oldIndex, newIndex)
       setColumns(newColumns)
-
-      const prev = newColumns[newIndex - 1]?.position ?? null
-      const next = newColumns[newIndex + 1]?.position ?? null
-      const newPosition = generateKeyBetween(prev, next)
-
-      // Check if rebalance needed
-      const positions = newColumns.map(c => c.position)
-      if (needsRebalance(positions)) {
-        rebalanceColumns(newColumns.map(c => c.id))
-      } else {
-        moveColumn(active.id as string, newPosition, boardId)
-      }
+      schedulRebalance(() => rebalanceColumns(newColumns.map(c => c.id)))
+      dragSourceColId.current = null
+      dragDestColId.current = null
       return
     }
 
-    const sourceCol = findColumn(active.id as string)
-    if (!sourceCol) return
+    const sourceColId = dragSourceColId.current
+    const destColId = dragDestColId.current
+    dragSourceColId.current = null
+    dragDestColId.current = null
 
-    const destCol = columns.find(c => c.id === over.id) ?? findColumn(over.id as string)
-    if (!destCol) return
+    if (!sourceColId || !destColId) return
 
-    if (sourceCol.id === destCol.id) {
-      const oldIndex = sourceCol.cards.findIndex(c => c.id === active.id)
-      const newIndex = sourceCol.cards.findIndex(c => c.id === over.id)
+    if (sourceColId === destColId) {
+      const col = columns.find(c => c.id === sourceColId)!
+      const oldIndex = col.cards.findIndex(c => c.id === active.id)
+      const newIndex = col.cards.findIndex(c => c.id === over.id)
       if (oldIndex === newIndex) return
 
-      const reordered = arrayMove(sourceCol.cards, oldIndex, newIndex)
-      setColumns(prev => prev.map(col =>
-        col.id === sourceCol.id ? { ...col, cards: reordered } : col
+      const reordered = arrayMove(col.cards, oldIndex, newIndex)
+      setColumns(prev => prev.map(c =>
+        c.id === sourceColId ? { ...c, cards: reordered } : c
       ))
-
-      const prev = reordered[newIndex - 1]?.position ?? null
-      const next = reordered[newIndex + 1]?.position ?? null
-      const newPosition = generateKeyBetween(prev, next)
-
-      if (needsRebalance(reordered.map(c => c.position))) {
-        rebalanceCards(reordered.map(c => c.id))
-      } else {
-        moveCard(active.id as string, sourceCol.id, newPosition, boardId)
-      }
+      schedulRebalance(() => rebalanceCards(reordered.map(c => c.id)))
     } else {
-      const updatedDestCol = columns.find(c => c.id === destCol.id)!
-      const destIndex = updatedDestCol.cards.findIndex(c => c.id === over.id)
+      const destCol = columns.find(c => c.id === destColId)!
+      const sourceCol = columns.find(c => c.id === sourceColId)!
 
-      const prev = updatedDestCol.cards[destIndex - 1]?.position ?? null
-      const next = updatedDestCol.cards[destIndex]?.position ?? null
-      const newPosition = generateKeyBetween(prev, next)
-
-      if (needsRebalance(updatedDestCol.cards.map(c => c.position))) {
-        rebalanceCards(updatedDestCol.cards.map(c => c.id))
-      } else {
-        moveCard(active.id as string, destCol.id, newPosition, boardId)
-      }
+      // Update column_id immediately, rebalance positions after debounce
+      moveCard(active.id as string, destColId, 'a0', boardId)
+      schedulRebalance(async () => {
+        await rebalanceCards(destCol.cards.map(c => c.id))
+        if (sourceCol.cards.length > 0) await rebalanceCards(sourceCol.cards.map(c => c.id))
+      })
     }
   }
 
   return (
     <div className="flex flex-col h-full">
-
-      {/* Layout toggle */}
       <div className="flex justify-end mb-4 shrink-0">
         <div className="bg-gray-200 dark:bg-gray-800 rounded-lg p-1 flex gap-1">
           <button
@@ -235,7 +236,8 @@ export default function Board({ boardId, initialColumns, currentRole }: {
                 boardId={boardId}
                 onColumnAdded={onColumnAdded}
                 lastPosition={columns[columns.length - 1]?.position ?? null}
-              />            </div>
+              />
+            </div>
           ) : (
             <div className="grid grid-cols-2 xl:grid-cols-3 gap-4 overflow-y-auto pb-4">
               {columns.map(col => (
@@ -258,7 +260,8 @@ export default function Board({ boardId, initialColumns, currentRole }: {
                   boardId={boardId}
                   onColumnAdded={onColumnAdded}
                   lastPosition={columns[columns.length - 1]?.position ?? null}
-                />              </div>
+                />
+              </div>
             </div>
           )}
         </SortableContext>

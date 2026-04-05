@@ -7,6 +7,7 @@ import { CSS } from '@dnd-kit/utilities'
 import { Plus, X } from 'lucide-react'
 import CardModal from './CardModal'
 import { CardType } from './types'
+import { generateKeyBetween } from 'fractional-indexing'
 
 type CardItemProps = {
   card: CardType
@@ -148,13 +149,14 @@ export default function Column({ currentRole, id, boardId, title, cards, layout,
 
   async function handleAddCard(formData: FormData) {
     const title = formData.get('title') as string
+    const lastPosition = cards[cards.length - 1]?.position ?? null
     const tempCard: CardType = {
       id: crypto.randomUUID(),
       title,
       description: null,
       priority: null,
       due_date: null,
-      position: cards.length,
+      position: generateKeyBetween(lastPosition, null),
     }
     onCardAdded(id, tempCard)
     formRef.current?.reset()
