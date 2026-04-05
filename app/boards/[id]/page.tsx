@@ -51,10 +51,10 @@ export default async function BoardPage({ params }: { params: Promise<{ id: stri
   ]
 
   const sortedColumns = [...(board.columns ?? [])]
-    .sort((a, b) => a.position - b.position)
+    .sort((a, b) => a.position < b.position ? -1 : 1)
     .map(col => ({
       ...col,
-      cards: [...(col.cards ?? [])].sort((a, b) => a.position - b.position)
+      cards: [...(col.cards ?? [])].sort((a, b) => a.position < b.position ? -1 : 1)
     }))
 
   return (

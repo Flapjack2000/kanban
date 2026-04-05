@@ -4,13 +4,13 @@ export type CardType = {
   description: string | null
   priority: string | null
   due_date: string | null
-  position: number
+  position: string
 }
 
 export type ColumnType = {
   id: string
   title: string
-  position: number
+  position: string
   wip_limit: number | null
   cards: CardType[]
 }

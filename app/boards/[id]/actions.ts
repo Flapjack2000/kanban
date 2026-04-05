@@ -2,6 +2,8 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { generateInitialKeys } from '@/lib/ordering'
+import { generateKeyBetween } from 'fractional-indexing'
 
 export async function createColumn(boardId: string, formData: FormData) {
   const supabase = await createClient()
@@ -13,7 +15,8 @@ export async function createColumn(boardId: string, formData: FormData) {
     .order('position', { ascending: false })
     .limit(1)
 
-  const position = (columns?.[0]?.position ?? 0) + 1
+  const lastPosition = columns?.[0]?.position ?? null
+  const position = generateKeyBetween(lastPosition, null)
 
   const { error } = await supabase
     .from('columns')
@@ -39,7 +42,8 @@ export async function createCard(columnId: string, boardId: string, formData: Fo
     .order('position', { ascending: false })
     .limit(1)
 
-  const position = (cards?.[0]?.position ?? 0) + 1
+  const lastPosition = cards?.[0]?.position ?? null
+  const position = generateKeyBetween(lastPosition, null)
 
   const { error } = await supabase
     .from('cards')
@@ -86,22 +90,55 @@ export async function renameCard(cardId: string, title: string, boardId: string)
   revalidatePath(`/boards/${boardId}`)
 }
 
-export async function moveCard(cardId: string, newColumnId: string, newPosition: number, boardId: string) {
+export async function moveCard(
+  cardId: string,
+  newColumnId: string,
+  newPosition: string,
+  boardId: string
+) {
   const supabase = await createClient()
   const { error } = await supabase
     .from('cards')
     .update({ column_id: newColumnId, position: newPosition })
     .eq('id', cardId)
   if (error) throw new Error(error.message)
-  revalidatePath(`/boards/${boardId}`)
 }
 
-export async function moveColumn(columnId: string, newPosition: number, boardId: string) {
+export async function moveColumn(
+  columnId: string,
+  newPosition: string,
+  boardId: string
+) {
   const supabase = await createClient()
   const { error } = await supabase
     .from('columns')
     .update({ position: newPosition })
     .eq('id', columnId)
   if (error) throw new Error(error.message)
-  revalidatePath(`/boards/${boardId}`)
+}
+
+export async function rebalanceCards(
+  orderedCardIds: string[],
+) {
+  const supabase = await createClient()
+  const keys = generateInitialKeys(orderedCardIds.length)
+
+  await Promise.all(
+    orderedCardIds.map((id, i) =>
+      supabase.from('cards').update({ position: keys[i] }).eq('id', id)
+    )
+  )
+}
+
+export async function rebalanceColumns(
+  orderedColumnIds: string[]
+) {
+  const supabase = await createClient()
+  const keys = generateInitialKeys(orderedColumnIds.length)
+
+  await Promise.all(
+    orderedColumnIds.map((id, i) =>
+      supabase.from('columns').update({ position: keys[i] }).eq('id', id)
+    )
+  )
 }

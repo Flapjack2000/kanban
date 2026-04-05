@@ -19,10 +19,11 @@ import {
 import { useState } from 'react'
 import Column from './Column'
 import AddColumn from './AddColumn'
-import { moveCard, moveColumn } from './actions'
 import { LayoutGrid, Kanban } from 'lucide-react'
-import { BoardRole } from '@/lib/boardRole'
 import { CardType, ColumnType } from './types'
+import { needsRebalance } from '@/lib/ordering'
+import { generateKeyBetween } from 'fractional-indexing'
+import { moveCard, moveColumn, rebalanceCards, rebalanceColumns } from './actions'
 
 type Layout = 'horizontal' | 'grid'
 
@@ -115,26 +116,63 @@ export default function Board({ boardId, initialColumns, currentRole }: {
       const oldIndex = columns.findIndex(c => c.id === active.id)
       const newIndex = columns.findIndex(c => c.id === over.id)
       if (oldIndex === newIndex) return
+
       const newColumns = arrayMove(columns, oldIndex, newIndex)
       setColumns(newColumns)
-      moveColumn(active.id as string, newIndex, boardId)
+
+      const prev = newColumns[newIndex - 1]?.position ?? null
+      const next = newColumns[newIndex + 1]?.position ?? null
+      const newPosition = generateKeyBetween(prev, next)
+
+      // Check if rebalance needed
+      const positions = newColumns.map(c => c.position)
+      if (needsRebalance(positions)) {
+        rebalanceColumns(newColumns.map(c => c.id))
+      } else {
+        moveColumn(active.id as string, newPosition, boardId)
+      }
       return
     }
 
-    const activeCol = findColumn(active.id as string)
-    if (!activeCol) return
+    const sourceCol = findColumn(active.id as string)
+    if (!sourceCol) return
 
-    const oldIndex = activeCol.cards.findIndex(c => c.id === active.id)
-    const newIndex = activeCol.cards.findIndex(c => c.id === over.id)
+    const destCol = columns.find(c => c.id === over.id) ?? findColumn(over.id as string)
+    if (!destCol) return
 
-    if (oldIndex !== newIndex) {
-      setColumns(prev => prev.map(col => {
-        if (col.id !== activeCol.id) return col
-        return { ...col, cards: arrayMove(col.cards, oldIndex, newIndex) }
-      }))
+    if (sourceCol.id === destCol.id) {
+      const oldIndex = sourceCol.cards.findIndex(c => c.id === active.id)
+      const newIndex = sourceCol.cards.findIndex(c => c.id === over.id)
+      if (oldIndex === newIndex) return
+
+      const reordered = arrayMove(sourceCol.cards, oldIndex, newIndex)
+      setColumns(prev => prev.map(col =>
+        col.id === sourceCol.id ? { ...col, cards: reordered } : col
+      ))
+
+      const prev = reordered[newIndex - 1]?.position ?? null
+      const next = reordered[newIndex + 1]?.position ?? null
+      const newPosition = generateKeyBetween(prev, next)
+
+      if (needsRebalance(reordered.map(c => c.position))) {
+        rebalanceCards(reordered.map(c => c.id))
+      } else {
+        moveCard(active.id as string, sourceCol.id, newPosition, boardId)
+      }
+    } else {
+      const updatedDestCol = columns.find(c => c.id === destCol.id)!
+      const destIndex = updatedDestCol.cards.findIndex(c => c.id === over.id)
+
+      const prev = updatedDestCol.cards[destIndex - 1]?.position ?? null
+      const next = updatedDestCol.cards[destIndex]?.position ?? null
+      const newPosition = generateKeyBetween(prev, next)
+
+      if (needsRebalance(updatedDestCol.cards.map(c => c.position))) {
+        rebalanceCards(updatedDestCol.cards.map(c => c.id))
+      } else {
+        moveCard(active.id as string, destCol.id, newPosition, boardId)
+      }
     }
-
-    moveCard(active.id as string, activeCol.id, newIndex, boardId)
   }
 
   return (
@@ -193,8 +231,11 @@ export default function Board({ boardId, initialColumns, currentRole }: {
                   onColumnDeleted={onColumnDeleted}
                 />
               ))}
-              <AddColumn boardId={boardId} onColumnAdded={onColumnAdded} />
-            </div>
+              <AddColumn
+                boardId={boardId}
+                onColumnAdded={onColumnAdded}
+                lastPosition={columns[columns.length - 1]?.position ?? null}
+              />            </div>
           ) : (
             <div className="grid grid-cols-2 xl:grid-cols-3 gap-4 overflow-y-auto pb-4">
               {columns.map(col => (
@@ -213,8 +254,11 @@ export default function Board({ boardId, initialColumns, currentRole }: {
                 />
               ))}
               <div className="col-span-1 flex self-start">
-                <AddColumn boardId={boardId} onColumnAdded={onColumnAdded} />
-              </div>
+                <AddColumn
+                  boardId={boardId}
+                  onColumnAdded={onColumnAdded}
+                  lastPosition={columns[columns.length - 1]?.position ?? null}
+                />              </div>
             </div>
           )}
         </SortableContext>

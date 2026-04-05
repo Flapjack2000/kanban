@@ -4,7 +4,7 @@ import { useRef, useState } from 'react'
 import { createCard, deleteCard, deleteColumn, renameColumn } from './actions'
 import { useSortable, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { Plus, X, Logs } from 'lucide-react'
+import { Plus, X } from 'lucide-react'
 import CardModal from './CardModal'
 import { CardType } from './types'
 

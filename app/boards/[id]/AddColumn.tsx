@@ -1,15 +1,16 @@
 'use client'
-
 import { useRef, useState } from 'react'
 import { createColumn } from './actions'
 import { Plus } from 'lucide-react'
+import { generateKeyBetween } from 'fractional-indexing'
 
 type Props = {
   boardId: string
-  onColumnAdded: (column: { id: string; title: string; position: number; wip_limit: number | null; cards: [] }) => void
+  onColumnAdded: (column: { id: string; title: string; position: string; wip_limit: number | null; cards: [] }) => void
+  lastPosition: string | null
 }
 
-export default function AddColumn({ boardId, onColumnAdded }: Props) {
+export default function AddColumn({ boardId, onColumnAdded, lastPosition }: Props) {
   const [adding, setAdding] = useState(false)
   const formRef = useRef<HTMLFormElement>(null)
 
@@ -18,7 +19,7 @@ export default function AddColumn({ boardId, onColumnAdded }: Props) {
     const tempColumn = {
       id: crypto.randomUUID(),
       title,
-      position: 0,
+      position: generateKeyBetween(lastPosition, null),
       wip_limit: null,
       cards: [] as [],
     }
@@ -45,7 +46,6 @@ export default function AddColumn({ boardId, onColumnAdded }: Props) {
       action={handleSubmit}
       className="bg-gray-200 dark:bg-gray-800 rounded-xl w-72 shrink-0 p-3 flex flex-col gap-2"
     >
-
       <input
         name="title"
         type="text"
